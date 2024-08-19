@@ -11,4 +11,11 @@
 # this version assumes the *new* location of the conf/ directory (petsc release>=3.6)
 # in ${PETSC_DIR}/lib/petsc/conf/
 include ${PETSC_DIR}/lib/petsc/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/rules
+
+print-%  : ; @echo $($*)
+
+getlinklibs:
+	@echo -Wl,--copy-dt-needed-entries ${FC_LINKER_FLAGS} -lpetsc
+
+getincludedirs:
+	@echo ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}
