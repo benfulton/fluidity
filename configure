@@ -12809,15 +12809,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 printf "%s\n" "#define HAVE_PETSC 1" >>confdefs.h
 
-if test "0$PETSC_VERSION_MAJOR" -ge 3 -a "0$PETSC_VERSION_MINOR" -ge 19; then
-
-printf "%s\n" "#define PETSC_NULL_PTR_NAME PETSC_NULLPTR" >>confdefs.h
-
-else
-
-printf "%s\n" "#define PETSC_NULL_PTR_NAME PETSC_NULL" >>confdefs.h
-
-fi
 
 
 

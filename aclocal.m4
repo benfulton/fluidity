@@ -562,11 +562,6 @@ AC_LANG_RESTORE
 
 
 AC_DEFINE(HAVE_PETSC,1,[Define if you have the PETSc library.])
-if test "0$PETSC_VERSION_MAJOR" -ge 3 -a "0$PETSC_VERSION_MINOR" -ge 19; then
-  AC_DEFINE(PETSC_NULL_PTR_NAME,PETSC_NULLPTR,[Name of PETSc's null pointer type])
-else
-  AC_DEFINE(PETSC_NULL_PTR_NAME,PETSC_NULL,[Name of PETSc's null pointer type])
-fi
 
 ])dnl ACX_PETSc
 

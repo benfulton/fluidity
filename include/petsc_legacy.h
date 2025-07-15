@@ -22,3 +22,7 @@
 #define KSPMonitorResidual KSPMonitorDefault
 #define KSPMonitorTrueResidual KSPMonitorTrueResidualNorm
 #endif
+
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR<19)
+#define PETSC_NULLPTR PETSC_NULL
+#endif
