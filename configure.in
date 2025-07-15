@@ -1517,8 +1517,8 @@ if test "$with_VTK" = no ; then enable_vtk=no; fi
 if test "$enable_VTK" = no ; then enable_vtk=no; fi
 if test "$enable_vtk" != "no" ; then
     AC_MSG_NOTICE([Checking for VTK automagic.])
-    VTK_FLAGS=`cmake --find-package -DNAME=VTK -DCOMPILER_ID=gcc -DLANGUAGE=Fortran -DMODE=COMPILE`
-    VTK_LIBS=`cmake --find-package -DNAME=VTK -DCOMPILER_ID=gcc -DLANGUAGE=Fortran -DMODE=LINK`
+    VTK_FLAGS=`cmake --find-package -DNAME=VTK -DCOMPILER_ID=gcc -DLANGUAGE=Fortran -DMODE=COMPILE 2>/dev/null || true`
+    VTK_LIBS=`cmake --find-package -DNAME=VTK -DCOMPILER_ID=gcc -DLANGUAGE=Fortran -DMODE=LINK 2>/dev/null || true`
 
     OLD_CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$CPPFLAGS $VTK_FLAGS"
@@ -1566,17 +1566,18 @@ if test "$enable_vtk" != "no" ; then
             # VTK 6 has a version macros file
             if test -r $i/vtkVersionMacros.h; then
                 # Get the version number from the macros file
-                this_vtk_version=$(grep VTK_MAJOR_VERSION $i/vtkVersionMacros.h | sed 's/#define VTK_MAJOR_VERSION //')
+                this_vtk_version=$(grep -m1 VTK_MAJOR_VERSION $i/vtkVersionMacros.h | sed 's/#define VTK_MAJOR_VERSION //')
                 # Use the latest version available
                 if [[ $this_vtk_version -gt $vtk_version ]]; then
                    vtk_version=$this_vtk_version
+                   vtk_minor_version=$( grep -m1 VTK_MINOR_VERSION $i/vtkVersionMacros.h | sed 's/#define VTK_MINOR_VERSION //' )
                    vtk_include_dir=$i
                    vtk_version_file="vtkVersionMacros.h"
                 fi
             # VTK 5 has a configure file that defined the macros
             elif test -r $i/vtkConfigure.h; then
                 # Get the version number from the configure file
-                this_vtk_version=$(grep VTK_MAJOR_VERSION $i/vtkConfigure.h | sed 's/#define VTK_MAJOR_VERSION //')
+                this_vtk_version=$(grep -m1 VTK_MAJOR_VERSION $i/vtkConfigure.h | sed 's/#define VTK_MAJOR_VERSION //')
                 # Use the latest version available
                 if [[ $this_vtk_version -gt $vtk_version ]]; then
                    vtk_version=$this_vtk_version
@@ -1667,9 +1668,36 @@ if test "$enable_vtk" != "no" ; then
             AC_CHECK_LIB(vtkCommonExecutionModel, main)
             AC_CHECK_LIB(vtkIOLegacy, main)
             AC_CHECK_LIB(vtkFiltersGeneral, main)
+        else
+          # Any other version
+          AC_CHECK_LIB(vtkCommonCore-${vtk_version}.${vtk_minor_version},main,[],[if test "x$VTK_LIBS" != "x" ; then
+                    LIBS="$LIBS -L$VTK_LIBS"
+                    unset ac_cv_lib_vtkCommonCore_main
+                    AC_CHECK_LIB(vtkCommonCore, main, [],
+                       [
+                          AC_MSG_ERROR([Cannot find vtk installation.])
+                          exit -1
+                       ])
+                 else
+                    AC_MSG_ERROR([Cannot find vtk installation.])
+                    exit -1
+                 fi
+                ])
+            AC_CHECK_LIB(vtkIOXML-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkParallelMPI-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkIOParallel-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkIOParallelXML-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkIOCore-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkCommonDataModel-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkCommonExecutionModel-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkIOLegacy-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkFiltersGeneral-${vtk_version}.${vtk_minor_version}, main)
+            AC_CHECK_LIB(vtkFiltersVerdict-${vtk_version}.${vtk_minor_version}, main)
+
         fi
     fi
-fi
+  fi
+
 cat > include/vtk.h <<EOF
 #ifndef VTK_H
 #define VTK_H

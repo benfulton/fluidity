@@ -1,6 +1,8 @@
-\usepackage{units}
 \usepackage{xspace}
 \usepackage{amsfonts,amsmath,amssymb,amsthm,amsbsy,amssymb,bm}
+\ifdefined\unit\else
+  \NewDocumentCommand\unit{km}{\si{#1}}
+\fi
 
 % Place any maths notation which is also required in figures here.
 
@@ -147,7 +149,8 @@
 
 % Units
 \newcommand{\m}[1][]{\unit[#1]{m}}
-\newcommand{\km}[1][]{\unit[#1]{km}}
+%\newcommand{\km}[1][]{\unit[#1]{km}}
+\newcommand{\km}[1][]{\qty{#1}{\kilo\metre}}
 \newcommand{\s}[1][]{\unit[#1]{s}}
 \newcommand{\invs}[1][]{\unit[#1]{s}\ensuremath{^{-1}}}
 \newcommand{\ms}[1][]{\unit[#1]{m\ensuremath{\,}s\ensuremath{^{-1}}}}

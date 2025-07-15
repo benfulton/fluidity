@@ -154,38 +154,6 @@ AC_LANG_PUSH([C++])
 AC_ARG_ENABLE(vtk,[AC_HELP_STRING([--enable-vtk],
             [Enable VTK support to build and run test cases (default: no).])])
 if test "x$enable_vtk" != "xno" ; then
-    AC_MSG_NOTICE([Checking for VTK automagic.])
-    VTK_FLAGS=`cmake --find-package -DNAME=VTK -DCOMPILER_ID=gcc -DLANGUAGE=Fortran -DMODE=COMPILE`
-    VTK_LIBS=`cmake --find-package -DNAME=VTK -DCOMPILER_ID=gcc -DLANGUAGE=Fortran -DMODE=LINK`
-    OLD_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $VTK_FLAGS"
-    OLD_LIBS="$LIBS"
-    LIBS="$LIBS $VTK_LIBS"
-    AC_LINK_IFELSE(
-	[AC_LANG_PROGRAM([[
-#include <vtkVersion.h>
-#include <vtkUnstructuredGrid.h>
-                        ]],
-		[[
-                        vtkVersion::GetVTKMajorVersion();
-                        vtkUnstructuredGrid *ug=vtkUnstructuredGrid::New();
-                        ]])
-            ],
-	[
-            AC_MSG_NOTICE([VTK automagic works.])
-	    CPPFLAGS="$CPPFLAGS -DHAVE_VTK"
-            VTK=yes
-            search_for_vtk=no
-            ],
-	[
-            AC_MSG_NOTICE([No VTK automagic])
-	    search_for_vtk=yes
-	    CPPFLAGS="$OLD_CPPFLAGS"
-	    LIBS="$OLD_LIBS"
-	])
-
-    if test "x$search_for_vtk" == "xyes" ; then
-
         # Need to check what version of VTK is on the system.
 
         # User may set the install directory for VTK but use
@@ -202,7 +170,7 @@ if test "x$enable_vtk" != "xno" ; then
             # VTK 6 has a version macros file
             if test -r $i/vtkVersionMacros.h; then
                 # Get the version number from the macros file
-                this_vtk_version=$(grep VTK_MAJOR_VERSION $i/vtkVersionMacros.h | sed 's/#define VTK_MAJOR_VERSION //')
+                this_vtk_version=$(grep -m1 VTK_MAJOR_VERSION $i/vtkVersionMacros.h | sed 's/#define VTK_MAJOR_VERSION //')
                 # Use the latest version available
                 if [[ $this_vtk_version -gt $vtk_version ]]; then
                    vtk_version=$this_vtk_version
@@ -212,7 +180,7 @@ if test "x$enable_vtk" != "xno" ; then
             # VTK 5 has a configure file that defined the macros
             elif test -r $i/vtkConfigure.h; then
                 # Get the version number from the configure file
-                this_vtk_version=$(grep VTK_MAJOR_VERSION $i/vtkConfigure.h | sed 's/#define VTK_MAJOR_VERSION //')
+                this_vtk_version=$(grep -m1 VTK_MAJOR_VERSION $i/vtkConfigure.h | sed 's/#define VTK_MAJOR_VERSION //')
                 # Use the latest version available
                 if [[ $this_vtk_version -gt $vtk_version ]]; then
                    vtk_version=$this_vtk_version
@@ -301,7 +269,6 @@ if test "x$enable_vtk" != "xno" ; then
             AC_CHECK_LIB(vtkCommonDataModel, main)
         fi
     fi
-fi
 cat > include/vtk.h <<EOF
 #ifndef VTK_H
 #define VTK_H
