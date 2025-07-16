@@ -1604,7 +1604,7 @@ if test "$enable_vtk" != "no" ; then
             AC_CHECK_LIB(dl, main)
             AC_CHECK_LIB(vtkCommon, main, [],
                 [if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommon_main
                     AC_CHECK_LIB(vtkCommon, main, [],
                        [
@@ -1648,7 +1648,7 @@ if test "$enable_vtk" != "no" ; then
             fi
             AC_CHECK_LIB(vtkCommonCore, main, [],
                 [if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommonCore_main
                     AC_CHECK_LIB(vtkCommonCore, main, [],
                        [
@@ -1671,7 +1671,7 @@ if test "$enable_vtk" != "no" ; then
         else
           # Any other version
           AC_CHECK_LIB(vtkCommonCore-${vtk_version}.${vtk_minor_version},main,[],[if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommonCore_${vtk_version}_${vtk_minor_version}_main
                     AC_CHECK_LIB(vtkCommonCore-${vtk_version}.${vtk_minor_version}, main, [],
                        [
@@ -1683,6 +1683,7 @@ if test "$enable_vtk" != "no" ; then
                     exit -1
                  fi
                 ])
+            AC_CHECK_LIB(vtksys-${vtk_version}.${vtk_minor_version},main)
             AC_CHECK_LIB(vtkIOXML-${vtk_version}.${vtk_minor_version}, main)
             AC_CHECK_LIB(vtkParallelMPI-${vtk_version}.${vtk_minor_version}, main)
             AC_CHECK_LIB(vtkIOParallel-${vtk_version}.${vtk_minor_version}, main)

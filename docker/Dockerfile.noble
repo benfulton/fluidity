@@ -1,0 +1,42 @@
+# DockerFile for a Fludity development container
+
+# Use an Noble base image
+FROM ubuntu:noble
+
+# This DockerFile is looked after by
+MAINTAINER Stephan Kramer <s.kramer@imperial.ac.uk>
+
+# Installs shouldn't expect input
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Package updates and installs
+RUN apt update && \
+     apt -y dist-upgrade && \
+     apt -y install gnupg dirmngr && \
+     echo "deb http://ppa.launchpad.net/fluidity-core/ppa/ubuntu noble main" > /etc/apt/sources.list.d/fluidity-core-ppa-noble.list && \
+     gpg --keyserver keyserver.ubuntu.com --recv 0D45605A33BAC3BE && \
+     gpg --export --armor 33BAC3BE > /etc/apt/trusted.gpg.d/fluidity.asc && \
+     apt update && \
+     echo "Europe/London" > /etc/timezone && \
+     apt -y install fluidity-dev texlive-pstricks texlive texlive-latex-extra texlive-science python3-pip && \
+     apt clean
+
+WORKDIR /usr/local
+RUN curl -fsL https://gmsh.info/bin/Linux/gmsh-4.14.0-Linux64.tgz | tar --strip-components=1 -zxf -
+
+ENV OMPI_MCA_btl_vader_single_copy_mechanism=none
+ENV OMPI_MCA_rmaps_base_oversubscribe=1
+
+WORKDIR /root
+RUN curl -fsL https://vtk.org/files/release/9.4/VTK-9.4.0.tar.gz | tar -xzf - && \
+    cd VTK-9.4.0 && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/vtk-9.4.0 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DVTK_SMP_IMPLEMENTATION_TYPE:STRING=TBB -DBUILD_SHARED_LIBS=ON -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic\+\+ -DCMAKE_EXE_LINKER_FLAGS='-Wl,--as-needed -latomic' -DCMAKE_MODULE_LINKER_FLAGS=-Wl,--as-needed -DCMAKE_SHARED_LINKER_FLAGS=-Wl,--as-needed -DHDF5_IS_PARALLEL=OFF -DVTK_WRAP_PYTHON=ON -DVTK_USE_TK=ON -DVTK_USE_MPI=ON .. && \
+    cmake --build . -j 12 && \
+    cmake --install . && \
+    cd ../.. && \
+    rm -rf VTK-9.4.0
+
+USER fluidity
+WORKDIR /home/fluidity

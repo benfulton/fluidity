@@ -208,7 +208,7 @@ if test "x$enable_vtk" != "xno" ; then
             AC_CHECK_LIB(dl, main)
             AC_CHECK_LIB(vtkCommon, main, [],
                 [if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommon_main
                     AC_CHECK_LIB(vtkCommon, main, [],
                        [
@@ -252,7 +252,7 @@ if test "x$enable_vtk" != "xno" ; then
             fi
             AC_CHECK_LIB(vtkCommonCore, main, [],
                 [if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommonCore_main
                     AC_CHECK_LIB(vtkCommonCore, main, [],
                        [

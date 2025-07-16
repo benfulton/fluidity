@@ -10419,7 +10419,7 @@ then :
 
 else $as_nop
   if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommon_main
                     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lvtkCommon" >&5
 printf %s "checking for main in -lvtkCommon... " >&6; }
@@ -10874,7 +10874,7 @@ then :
 
 else $as_nop
   if test "x$VTK_LIBS" != "x" ; then
-                    LIBS="$LIBS -L$VTK_LIBS"
+                    LIBS="$LIBS -Wl,-rpath=$VTK_LIBS -L$VTK_LIBS"
                     unset ac_cv_lib_vtkCommonCore_main
                     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lvtkCommonCore" >&5
 printf %s "checking for main in -lvtkCommonCore... " >&6; }
