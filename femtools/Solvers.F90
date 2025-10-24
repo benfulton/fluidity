@@ -1366,7 +1366,7 @@ character(len=*), intent(in):: solver_option_path
 
 end subroutine petsc_solve_destroy_petsc_csr
 
-subroutine ConvergenceCheck(reason, iterations, name, solver_option_path, &
+subroutine ConvergenceCheck(converged_reason, iterations, name, solver_option_path, &
   startfromzero, A, b, petsc_numbering, x0, vector_x0, checkconvergence, nomatrixdump)
   !!< Checks reason of convergence. If negative (not converged)
   !!< writes out a scary warning and dumps matrix (if first time),
@@ -1374,7 +1374,8 @@ subroutine ConvergenceCheck(reason, iterations, name, solver_option_path, &
   !!< (i.e. not converged due to other reasons than reaching max_its)
   !!< it sets sig_int to .true. causing the run to halt and dump
   !!< at the end of the time step.
-  integer, intent(in):: reason, iterations
+  KSPConvergedReason, intent(in):: converged_reason
+  integer, intent(in):: iterations
   !! name of the thing we're solving for, used in log output:
   character(len=*), intent(in):: name
   !! for new options path to solver options
@@ -1398,6 +1399,7 @@ subroutine ConvergenceCheck(reason, iterations, name, solver_option_path, &
   PetscErrorCode ierr
   character(len=30) reasons(10)
   real spin_up_time, current_time
+  integer reason
 
   reasons(1)  = "Undefined"
   reasons(2)  = "KSP_DIVERGED_NULL"
@@ -1410,6 +1412,11 @@ subroutine ConvergenceCheck(reason, iterations, name, solver_option_path, &
   reasons(9)  = "KSP_DIVERGED_NAN"
   reasons(10) = "KSP_DIVERGED_INDEFINITE_MAT"
 
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR<23)
+  reason = converged_reason
+#else
+  reason = converged_reason%v  ! recover the (old style) numerical version (probably a bad idea)
+#endif
   if (reason<=0) then
      if(present_and_true(nomatrixdump)) matrixdumped = .true.
      if (present(checkconvergence)) then
@@ -1815,6 +1822,11 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
   logical, optional, intent(in) :: is_subpc
 
     KSP:: subksp
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR<23)
+    KSP:: subksps
+#else
+    KSP, dimension(:), pointer :: subksps
+#endif
     PC:: subpc
     MatNullSpace:: nullsp
     PCType:: pctype, hypretype
@@ -1883,9 +1895,9 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
       call PCSetup(pc, ierr)
 
       if (pctype==PCBJACOBI) then
-        call PCBJACOBIGetSubKSP(pc, n_local, first_local, subksp, ierr)
+        call PCBJACOBIGetSubKSP(pc, n_local, first_local, subksps, ierr)
       else
-        call PCASMGetSubKSP(pc, n_local, first_local, subksp, ierr)
+        call PCASMGetSubKSP(pc, n_local, first_local, subksps, ierr)
       end if
 
       call KSPGetPC(subksp, subpc, ierr)
@@ -1908,7 +1920,7 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
        call PCSetType(pc, PCBJACOBI, ierr)
        ! need to call this before the subpc can be retrieved:
        call PCSetup(pc, ierr)
-       call PCBJACOBIGetSubKSP(pc, n_local, first_local, subksp, ierr)
+       call PCBJACOBIGetSubKSP(pc, n_local, first_local, subksps, ierr)
        call KSPGetPC(subksp, subpc, ierr)
        call PCSetType(subpc, pctype, ierr)
 
@@ -1984,7 +1996,11 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
   type(petsc_numbering_type), intent(in):: petsc_numbering
 
     character(len=128):: fieldsplit_type
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR<23)
     KSP, dimension(size(petsc_numbering%gnn2unn,2)):: subksps
+#else
+    KSP, dimension(:), pointer:: subksps
+#endif
     Mat :: mat, pmat
     MatNullSpace :: null_space
     IS:: index_set
