@@ -780,6 +780,26 @@ contains
 
   end subroutine petsc_csr_addto
 
+  subroutine fix_column_numbers(idxm, idxn)
+    ! for some rows that we are not assembling (indicated with negative index)
+    ! the column indices are not reliable, as they are outside any halo and thus
+    ! have not been filled in in the gnn2unn numbering (we don't know their universal petsc number)
+    ! this is fine because we're telling petsc to skip these entries (with a negative row index)
+    ! but the random column index may still trip some internal petsc checks
+    ! therefore here we set these to negative as well
+
+    PetscInt, dimension(:), intent(in) :: idxm  ! row numbers
+    PetscInt, dimension(:), intent(inout) :: idxn  ! column numbers
+    integer i
+
+    do i=1, size(idxm)
+      if (idxm(i)<0) then
+        idxn(i) = -1
+      end if
+    end do
+
+  end subroutine fix_column_numbers
+
   subroutine petsc_csr_vaddto(matrix, blocki, blockj, i, j, val)
     !!< Add multiple values to matrix(blocki, blockj, i,j)
     type(petsc_csr_matrix), intent(inout) :: matrix
@@ -793,6 +813,7 @@ contains
 
     idxm=matrix%row_numbering%gnn2unn(i,blocki)
     idxn=matrix%column_numbering%gnn2unn(j,blockj)
+    call fix_column_numbers(idxm, idxn)
 
     call MatSetValues(matrix%M, size(i), idxm, size(j), idxn, &
         real(reshape(val, (/ size(val) /)), kind=PetscScalar_kind), &
@@ -816,6 +837,7 @@ contains
 
     idxm=matrix%row_numbering%gnn2unn(i,:)
     idxn=matrix%column_numbering%gnn2unn(j,:)
+    call fix_column_numbers(idxm, idxn)
 
     call MatSetValues(matrix%M, size(idxm), idxm, size(idxn), idxn, &
                   real(reshape(val, (/ size(val) /)), kind=PetscScalar_kind), ADD_VALUES, ierr)
@@ -843,6 +865,7 @@ contains
       idxm=matrix%row_numbering%gnn2unn(i,blocki)
       do blockj=1, size(matrix%column_numbering%gnn2unn,2)
         idxn=matrix%column_numbering%gnn2unn(j,blockj)
+        call fix_column_numbers(idxm, idxn)
         ! unfortunately we need a copy here to pass contiguous memory
         value=reshape(val(blocki, blockj, :, :), (/ size(value) /))
         call MatSetValues(matrix%M, size(i), idxm, size(j), idxn, &
@@ -875,6 +898,7 @@ contains
       do blockj=1, size(matrix%column_numbering%gnn2unn,2)
         if (block_mask(blocki,blockj)) then
           idxn=matrix%column_numbering%gnn2unn(j,blockj)
+          call fix_column_numbers(idxm, idxn)
           ! unfortunately we need a copy here to pass contiguous memory
           value=reshape(val(blocki, blockj, :, :), (/ size(value) /))
           call MatSetValues(matrix%M, size(i), idxm, size(j), idxn, &

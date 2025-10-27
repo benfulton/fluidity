@@ -1894,11 +1894,19 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
       ! need to call this before the subpc can be retrieved:
       call PCSetup(pc, ierr)
 
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR>=23)
+      nullify(subksps)
+#endif
       if (pctype==PCBJACOBI) then
         call PCBJACOBIGetSubKSP(pc, n_local, first_local, subksps, ierr)
       else
         call PCASMGetSubKSP(pc, n_local, first_local, subksps, ierr)
       end if
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR>=23)
+      subksp = subksps(1)
+#else
+      subksp = subksps
+#endif
 
       call KSPGetPC(subksp, subpc, ierr)
       ! recursively call to setup the subpc
@@ -1920,7 +1928,15 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
        call PCSetType(pc, PCBJACOBI, ierr)
        ! need to call this before the subpc can be retrieved:
        call PCSetup(pc, ierr)
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR>=23)
+       nullify(subksps)
+#endif
        call PCBJACOBIGetSubKSP(pc, n_local, first_local, subksps, ierr)
+#if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR>=23)
+       subksp = subksps(1)
+#else
+       subksp = subksps
+#endif
        call KSPGetPC(subksp, subpc, ierr)
        call PCSetType(subpc, pctype, ierr)
 
@@ -1999,7 +2015,7 @@ subroutine create_ksp_from_options(ksp, mat, pmat, solver_option_path, parallel,
 #if (PETSC_VERSION_MAJOR==3 && PETSC_VERSION_MINOR<23)
     KSP, dimension(size(petsc_numbering%gnn2unn,2)):: subksps
 #else
-    KSP, dimension(:), pointer:: subksps
+    KSP, dimension(:), pointer:: subksps => null()
 #endif
     Mat :: mat, pmat
     MatNullSpace :: null_space

@@ -1535,7 +1535,7 @@ function IsNullMatNullSpace(nullsp)
     ! MatNullSpace(0) is what is returned by MatGetNullspace if no nullspace is present
     ! (because a wrapper on the output is missing, and there isn't a PETSC_NULL_MATNULLSPACE
     ! in the first place)
-    IsNullMatNullSpace = nullsp%v==-1 .or. nullsp%v==0
+    IsNullMatNullSpace = nullsp%v<= 0
 
 end function IsNullMatNullSpace
 

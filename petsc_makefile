@@ -16,7 +16,7 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 print-%  : ; @echo $($*)
 
 getlinklibs:
-	@echo -Wl,--copy-dt-needed-entries ${FC_LINKER_FLAGS} -L${PETSC_LIB_DIR} -lpetsc
+	@echo -Wl,--copy-dt-needed-entries ${FC_LINKER_FLAGS} -Wl,-rpath,${PETSC_LIB_DIR} -L${PETSC_LIB_DIR} -lpetsc
 
 getincludedirs:
 	@echo ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}
