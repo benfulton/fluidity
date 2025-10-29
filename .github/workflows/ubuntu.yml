@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ "Build Jammy", "Build Jammy OMP" ]
+        name: [ "Build Jammy", "Build Jammy OMP", "Build Noble" ]
         include:
 
           - name: "Build Jammy"
@@ -25,6 +25,9 @@ jobs:
 
           - name: "Build Jammy OMP"
             release: jammy-omp
+
+          - name: "Build Noble"
+            release: noble
 
     steps:
 
@@ -56,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ "Unit Jammy", "Short Jammy", "Medium Jammy" ]
+        name: [ "Unit Jammy", "Short Jammy", "Medium Jammy", "Unit Noble", "Short Noble", "Medium Noble" ]
         include:
 
           - name: "Unit Jammy"
@@ -70,6 +73,21 @@ jobs:
             output: "test_results.xml"
 
           - name: "Medium Jammy"
+            release: jammy
+            command: "make THREADS=2 mediumtest"
+            output: "test_results_medium.xml"
+
+          - name: "Unit Noble"
+            release: jammy
+            command: "make unittest"
+            output: "test_results_unittests.xml"
+
+          - name: "Short Noble"
+            release: jammy
+            command: "make THREADS=2 test"
+            output: "test_results.xml"
+
+          - name: "Medium Noble"
             release: jammy
             command: "make THREADS=2 mediumtest"
             output: "test_results_medium.xml"
