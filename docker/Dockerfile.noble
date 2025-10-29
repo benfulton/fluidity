@@ -10,16 +10,16 @@ MAINTAINER Stephan Kramer <s.kramer@imperial.ac.uk>
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Package updates and installs
-RUN apt update && \
-     apt -y dist-upgrade && \
-     apt -y install gnupg dirmngr && \
+RUN apt-get update && \
+     apt-get -y dist-upgrade && \
+     apt-get -y install gnupg dirmngr && \
      echo "deb http://ppa.launchpad.net/fluidity-core/ppa/ubuntu noble main" > /etc/apt/sources.list.d/fluidity-core-ppa-noble.list && \
      gpg --keyserver keyserver.ubuntu.com --recv 0D45605A33BAC3BE && \
-     gpg --export --armor 33BAC3BE > /etc/apt/trusted.gpg.d/fluidity.asc && \
-     apt update && \
+     gpg --export --armor 33BAC3BE | apt-key add - && \
+     apt-get update && \
      echo "Europe/London" > /etc/timezone && \
-     apt -y install fluidity-dev texlive-pstricks texlive texlive-latex-extra texlive-science python3-pip && \
-     apt clean
+     apt-get -y install fluidity-dev texlive-pstricks texlive texlive-latex-extra texlive-science python3-pip python3-junit.xml && \
+     apt-get clean
 
 WORKDIR /usr/local
 RUN curl -fsL https://gmsh.info/bin/Linux/gmsh-4.14.0-Linux64.tgz | tar --strip-components=1 -zxf -
@@ -37,6 +37,15 @@ RUN curl -fsL https://vtk.org/files/release/9.4/VTK-9.4.0.tar.gz | tar -xzf - &&
     cmake --install . && \
     cd ../.. && \
     rm -rf VTK-9.4.0
+
+# Add a Fluidity user who will be the default user for this container
+# Make sure the user has a userid matching the host system
+# -- pass this as an argument at build time
+ARG userid=1000
+# if this uid already exists (starting from ubuntu base image this can
+# only be user `ubuntu` with uid=1000) remove it
+RUN getent passwd $userid && deluser ubuntu
+RUN adduser --disabled-password --gecos "" -u $userid fluidity
 
 USER fluidity
 WORKDIR /home/fluidity
