@@ -13,10 +13,9 @@
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-print-%  : ; @echo $($*)
-
+# define some backwards-compatible targets
 getlinklibs:
-	@echo -Wl,--copy-dt-needed-entries ${FC_LINKER_FLAGS} -Wl,-rpath,${PETSC_LIB_DIR} -L${PETSC_LIB_DIR} -lpetsc
+	@echo $(PETSC_WITH_EXTERNAL_LIB)
 
 getincludedirs:
-	@echo ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS}
+	@echo $(PETSC_CC_INCLUDES)
