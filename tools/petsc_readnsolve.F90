@@ -42,7 +42,7 @@ implicit none
   ! options read from command-line (-prns_... options)
   character(len=4096) filename, flml
   character(len=FIELD_NAME_LEN):: field
-  logical zero_init_guess, scipy, random_rhs
+  PetscBool zero_init_guess, scipy, random_rhs
 
   PetscViewer viewer
   PetscRandom pr
@@ -108,7 +108,7 @@ contains
   !! in fluidity is used
   ! options read from command line:
   character(len=*), intent(in):: filename
-  logical, intent(in):: zero_init_guess, scipy
+  PetscBool, intent(in):: zero_init_guess, scipy
   ! PETSc matrix, rhs vector and initial guess vector read from matrixdump:
   Mat, intent(inout):: matrix
   Vec, intent(inout):: x, rhs
@@ -754,7 +754,7 @@ contains
     zero_init_guess, &
     scipy, random_rhs)
   character(len=*), intent(out):: filename, flml, field
-  logical, intent(out):: zero_init_guess, scipy, random_rhs
+  PetscBool, intent(out):: zero_init_guess, scipy, random_rhs
 
     PetscBool flag
     PetscErrorCode ierr

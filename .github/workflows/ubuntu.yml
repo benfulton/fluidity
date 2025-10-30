@@ -17,20 +17,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ "Build Bionic", "Build Focal", "Build Jammy", "Build Jammy OMP" ]
+        name: [ "Build Jammy", "Build Jammy OMP", "Build Noble" ]
         include:
-
-          - name: "Build Bionic"
-            release: bionic
-
-          - name: "Build Focal"
-            release: focal
 
           - name: "Build Jammy"
             release: jammy
 
           - name: "Build Jammy OMP"
             release: jammy-omp
+
+          - name: "Build Noble"
+            release: noble
 
     steps:
 
@@ -62,28 +59,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ "Short Bionic", "Unit Focal", "Short Focal", "Medium Focal", "Unit Jammy", "Short Jammy", "Medium Jammy" ]
+        name: [ "Unit Jammy", "Short Jammy", "Medium Jammy", "Unit Noble" ]
         include:
-
-          - name: "Short Bionic"
-            release: bionic
-            command: "make THREADS=2 test"
-            output: "test_results.xml"
-
-          - name: "Unit Focal"
-            release: focal
-            command: "make unittest"
-            output: "test_results_unittests.xml"
-
-          - name: "Short Focal"
-            release: focal
-            command: "make THREADS=2 test"
-            output: "test_results.xml"
-
-          - name: "Medium Focal"
-            release: focal
-            command: "make THREADS=2 mediumtest"
-            output: "test_results_medium.xml"
 
           - name: "Unit Jammy"
             release: jammy
@@ -99,6 +76,11 @@ jobs:
             release: jammy
             command: "make THREADS=2 mediumtest"
             output: "test_results_medium.xml"
+
+          - name: "Unit Noble"
+            release: noble
+            command: "make unittest"
+            output: "test_results_unittests.xml"
 
     steps:
 
