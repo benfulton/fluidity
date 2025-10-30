@@ -26,4 +26,4 @@ RUN make fltools
 # RUN make manual
 
 # Python module 'assess' is required for some longtests
-RUN python3 -m pip install assess
+RUN python3 -m pip install --break-system-packages assess
